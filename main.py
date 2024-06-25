@@ -29,12 +29,12 @@ with st.sidebar:
         )
 
 if selected == 'Sourcing':
+    file_url = None
     st.markdown("## Ask me anything about sourcing!")
 
     if "thread_id" not in st.session_state:
         thread = client.beta.threads.create()
         st.session_state.thread_id = thread.id
-        st.session_state.uploaded_file = None
 
     if 'show_above' not in st.session_state:
         st.session_state.show_above = None
@@ -58,7 +58,7 @@ if selected == 'Sourcing':
         
         if st.session_state.show_above == 'upload':
             if file_to_upload := above_container.file_uploader("Choose a file", key="uploaded_file"):
-                st.session_state.file_url = ftp_upload(file_to_upload)
+                file_url = ftp_upload(file_to_upload)
                 # file_path = save_uploaded_file(uploaded_file)
                 # file = client.files.create(
                 #     file=open(file_path, "rb"),
@@ -73,9 +73,9 @@ if selected == 'Sourcing':
             st.markdown(prompt)        
 
         content = [{'type': 'text', 'text': prompt}]
-        if st.session_state.file_url:
+        if file_url:
             # content.append({'type': 'image_file', 'image_file': {"file_id": file.id}})
-            content.append({'type': 'image_url', 'image_url': {"url": st.session_state.file_url}})
+            content.append({'type': 'image_url', 'image_url': {"url": file_url}})
 
         client.beta.threads.messages.create(
             thread_id=st.session_state.thread_id,

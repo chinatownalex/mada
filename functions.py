@@ -1,11 +1,47 @@
 import os
 import streamlit as st
+from ftplib import FTP
+
+@st.experimental_dialog("Mada - Vietnam Sourcing Advisor", width="large")
+def show_popup():
+    video_url = 'https://moon.partners/mada/files/intro_video.mp4'
+    st.video(video_url)
+
+def ftp_upload(file):
+    try:
+        # Connect to the FTP server
+        ftp = FTP('ftp.moon.partners')
+        ftp.login(user='mada@moon.partners', passwd='Buffdude22!')
+
+        # Change to the desired directory on the FTP server
+        ftp.cwd('uploads/')
+
+        # Open the local CSV file in binary mode
+        # with open(local_path + filename, 'rb') as file:
+            # Upload the file to the FTP server
+        ftp.storbinary('STOR ' + file.name, file)
+
+        print(f'{file.name} uploaded successfully')
+        
+    except Exception as e:
+        print('Error occurred:', e)
+        
+    finally:
+        # Close the FTP connection
+        ftp.quit()
+
+    file_url = f'https://moon.partners/mada/uploads/{file.name}'
+
+    return file_url
+
 
 def show_upload():
     if st.session_state.show_above != 'upload':
         st.session_state.show_above = 'upload'
     elif st.session_state.show_above == 'upload':
+        st.session_state.uploaded_file = None
         st.session_state.show_above = None
+        
 
 def show_buttons():
     if st.session_state.show_above != 'buttons':

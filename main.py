@@ -6,7 +6,6 @@ import toml
 from streamlit_extras.bottom_container import bottom
 from functions import *
 import pandas as pd
-from ftplib import FTP
 
 # Retrieve the OpenAI API key
 ASSISTANT_ID = st.secrets["ASSISTANT_ID"]
@@ -16,37 +15,6 @@ client = OpenAI(api_key=OPENAI_KEY)
 
 st.logo("https://moon.partners/mada/files/logo.png")
 st.set_page_config(page_title="Mada - Vietnam Sourcing Advisor", page_icon=":speech_balloon:")
-
-@st.experimental_dialog("Mada - Vietnam Sourcing Advisor", width="large")
-def show_popup():
-    video_url = 'https://moon.partners/mada/files/intro_video.mp4'
-    st.video(video_url)
-
-def ftp_upload(file):
-    try:
-        # Connect to the FTP server
-        ftp = FTP('ftp.moon.partners')
-        ftp.login(user='mada@moon.partners', passwd='Buffdude22!')
-
-        # Change to the desired directory on the FTP server
-        ftp.cwd('uploads/')
-
-        # Open the local CSV file in binary mode
-        # with open(local_path + filename, 'rb') as file:
-            # Upload the file to the FTP server
-        ftp.storbinary('STOR ' + file.name, file)
-
-        print(f'{file.name} uploaded successfully')
-        
-    except Exception as e:
-        print('Error occurred:', e)
-        
-    finally:
-        # Close the FTP connection
-        ftp.quit()
-
-    file_url = f'https://moon.partners/mada/uploads/{file.name}'
-    return file_url
 
 with st.sidebar:
     st.button('Watch Intro Video', on_click=show_popup)
@@ -61,12 +29,12 @@ with st.sidebar:
         )
 
 if selected == 'Sourcing':
-    st.markdown("### Ask me anything about sourcing!")
+    st.markdown("## Ask me anything about sourcing!")
 
     if "thread_id" not in st.session_state:
         thread = client.beta.threads.create()
         st.session_state.thread_id = thread.id
-        st.session_state.file_url = None
+        st.session_state.uploaded_file = None
 
     if 'show_above' not in st.session_state:
         st.session_state.show_above = None
@@ -87,10 +55,10 @@ if selected == 'Sourcing':
             st.button('🧷', on_click=show_upload)
         with col2:
             prompt = st.chat_input("Example: Where can I find 10,000 square meters of green hand made tiles?")
-
-        if st.session_state.show_above == 'upload' and st.session_state.file_url == None:
-            if uploaded_file := above_container.file_uploader("Choose a file"):
-                st.session_state.file_url = ftp_upload(uploaded_file)
+        
+        if st.session_state.show_above == 'upload':
+            if file_to_upload := above_container.file_uploader("Choose a file", key="uploaded_file"):
+                st.session_state.file_url = ftp_upload(file_to_upload)
                 # file_path = save_uploaded_file(uploaded_file)
                 # file = client.files.create(
                 #     file=open(file_path, "rb"),
@@ -150,9 +118,8 @@ if selected == 'Sourcing':
         #         if st.button('Submit Order'): submit_order()
         #     with col2:
         #         if st.button('Download Report'): st.write('You have downloaded the report.')
-        
+
         show_buttons()
-        st.session_state.file_url = None
 
 
     if st.session_state.show_above == 'buttons':
@@ -275,3 +242,5 @@ if selected == 'About':
     hello@chie.co
     """
     )
+
+print(st.session_state)

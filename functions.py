@@ -46,8 +46,6 @@ def show_upload():
 def show_buttons():
     if st.session_state.show_above != 'buttons':
         st.session_state.show_above = 'buttons'
-    elif st.session_state.show_above == 'buttons':
-        st.session_state.show_above = None
 
 def save_uploaded_file(uploaded_file):
     # Define the file path

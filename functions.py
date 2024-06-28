@@ -7,6 +7,16 @@ def show_popup():
     video_url = 'https://moon.partners/mada/files/intro_video.mp4'
     st.video(video_url)
 
+def download_report(message):
+    markdown_logo = f'![Mada Logo](https://moon.partners/mada/files/logo.png)'
+    markdownl_title = f"# Mada Sourcing Report"
+    markdown_content = message['content']
+    line_break = '\n'
+    html_content = markdown.markdown(markdown_logo + line_break  + markdownl_title + line_break + markdown_content)
+
+    HTML(string=html_content).write_pdf('mada_sourcing_report.pdf')
+
+    
 def ftp_upload(file):
     try:
         # Connect to the FTP server

@@ -2,12 +2,8 @@ from openai import OpenAI
 import streamlit as st
 from streamlit_option_menu import option_menu
 import time
-import toml
 from streamlit_extras.bottom_container import bottom
 from functions import *
-import pandas as pd
-import markdown
-from weasyprint import HTML
 
 # Retrieve the OpenAI API key
 ASSISTANT_ID = st.secrets["ASSISTANT_ID"]
@@ -18,14 +14,6 @@ client = OpenAI(api_key=OPENAI_KEY)
 st.logo("https://moon.partners/mada/files/logo.png")
 st.set_page_config(page_title="Mada - Vietnam Sourcing Advisor", page_icon=":speech_balloon:")
 
-def download_report(message):
-    markdown_logo = f'![Mada Logo](https://moon.partners/mada/files/logo.png)'
-    markdownl_title = f"# Mada Sourcing Report"
-    markdown_content = message['content']
-    line_break = '\n'
-    html_content = markdown.markdown(markdown_logo + line_break  + markdownl_title + line_break + markdown_content)
-
-    HTML(string=html_content).write_pdf('mada_sourcing_report.pdf')
 
 with st.sidebar:
     st.button('Watch Intro Video', on_click=show_popup)
@@ -140,7 +128,7 @@ if selected == 'Sourcing':
             st.button('Connect with Suppliers', on_click=submit_order)
         with col2:
             if st.button('Download Report'):
-                download_report(message)
+                st.toast("Report downloaded successfully! ✅")
 
 
 if selected == 'Procurement':

@@ -6,6 +6,8 @@ import toml
 from streamlit_extras.bottom_container import bottom
 from functions import *
 import pandas as pd
+import markdown
+from weasyprint import HTML
 
 # Retrieve the OpenAI API key
 ASSISTANT_ID = st.secrets["ASSISTANT_ID"]
@@ -15,6 +17,15 @@ client = OpenAI(api_key=OPENAI_KEY)
 
 st.logo("https://moon.partners/mada/files/logo.png")
 st.set_page_config(page_title="Mada - Vietnam Sourcing Advisor", page_icon=":speech_balloon:")
+
+def download_report(message):
+    markdown_logo = f'![Mada Logo](https://moon.partners/mada/files/logo.png)'
+    markdownl_title = f"# Mada Sourcing Report"
+    markdown_content = message['content']
+    line_break = '\n'
+    html_content = markdown.markdown(markdown_logo + line_break  + markdownl_title + line_break + markdown_content)
+
+    HTML(string=html_content).write_pdf('mada_sourcing_report.pdf')
 
 with st.sidebar:
     st.button('Watch Intro Video', on_click=show_popup)
@@ -30,6 +41,7 @@ with st.sidebar:
 
 if selected == 'Sourcing':
     file_url = None
+    prompt = None
     st.markdown("## Ask me anything about sourcing!")
 
     if "thread_id" not in st.session_state:
@@ -42,6 +54,19 @@ if selected == 'Sourcing':
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
+    st.write("Example questions:")
+    questions = [
+        'Where can I find green handmade tiles?', 
+        'Where can I find 10,000 square meters of tiles?', 
+        'Which supplier can offer 200 square feet MOQ?', 
+        'Which terrazzo tiles suppliers have catalogs I can see?'
+        ]
+    cols = st.columns(4)
+    for i, col in enumerate(cols):
+        with col:
+            if st.button(questions[i]):
+                prompt = questions[i]
+
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
@@ -52,18 +77,18 @@ if selected == 'Sourcing':
 
         col1, col2 = st.columns([1, 12])
         with col1:
-            st.button('🧷', on_click=show_upload)
+            st.button('🧷', on_click=toggle_upload)
         with col2:
-            prompt = st.chat_input("Example: Where can I find 10,000 square meters of green hand made tiles?")
-        
+            chat_prompt = st.chat_input()
+            if chat_prompt: 
+                prompt = chat_prompt
+
+
         if st.session_state.show_above == 'upload':
             if file_to_upload := above_container.file_uploader("Choose a file", key="uploaded_file"):
                 file_url = ftp_upload(file_to_upload)
-                # file_path = save_uploaded_file(uploaded_file)
-                # file = client.files.create(
-                #     file=open(file_path, "rb"),
-                #     purpose="vision"
-                #     )
+    
+    st.session_state.new_message = False
 
     if prompt:
         
@@ -110,28 +135,14 @@ if selected == 'Sourcing':
             with st.chat_message("assistant"):
                 st.markdown(message.content[0].text.value)
 
-            last_reply = True
-
-        # with above_container:
-        #     col1, col2, col3 = st.columns([1, 1, 2])
-        #     with col1:
-        #         if st.button('Submit Order'): submit_order()
-        #     with col2:
-        #         if st.button('Download Report'): st.write('You have downloaded the report.')
-
-        show_buttons()
+        col1, col2, col3 = st.columns([3, 2, 4])
+        with col1:
+            st.button('Connect with Suppliers', on_click=submit_order)
+        with col2:
+            if st.button('Download Report'):
+                download_report(message)
 
 
-    if st.session_state.show_above == 'buttons':
-        with above_container:
-            col1, col2, col3 = st.columns([3, 2, 4])
-            with col1:
-                if st.button('Connect with Suppliers'): submit_order()
-            with col2:
-                if st.button('Download Report'): st.toast('You have downloaded the report.', icon='✅')
-
-
-    
 if selected == 'Procurement':
     st.title("Procurement")
 

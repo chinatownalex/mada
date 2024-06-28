@@ -35,18 +35,17 @@ def ftp_upload(file):
     return file_url
 
 
-def show_upload():
-    if st.session_state.show_above != 'upload':
-        st.session_state.show_above = 'upload'
-    elif st.session_state.show_above == 'upload':
-        st.session_state.uploaded_file = None
+def toggle_upload():
+    if st.session_state.show_above == 'upload':
         st.session_state.show_above = None
+        st.session_state.uploaded_file = None
+    elif st.session_state.show_above != 'upload':
+        st.session_state.show_above = 'upload'
+
+# def clear_upload():
+#     st.session_state.uploaded_file = None
+#     st.session_state.show_above = None
         
-
-def show_buttons():
-    if st.session_state.show_above != 'buttons':
-        st.session_state.show_above = 'buttons'
-
 def save_uploaded_file(uploaded_file):
     # Define the file path
     file_path = os.path.join("files", uploaded_file.name)
